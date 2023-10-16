@@ -1,4 +1,4 @@
-const User = require("../model/userModel");
+const User = require("../modal/user-modal");
 const authCtrl = {
   registerUser: async (req, res) => {
     if (
