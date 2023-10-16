@@ -11,12 +11,10 @@ app.use(cors());
 
 app.use(express.json());
 
-
-
 app.use("/api/v1", require("./routes/authroutes"));
 app.use("/api/v2", require("./routes/authroutes"));
-app.use ("/api/auth",require("./routes/user-routes"))
-
+app.use("/api/auth", require("./routes/user-routes"));
+app.use("/api/crm", require("./routes/notifyroutes"));
 mongoose
   .connect(process.env.MONGODB_URL, {
     useNewUrlParser: true,
