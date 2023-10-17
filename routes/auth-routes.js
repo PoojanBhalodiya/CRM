@@ -12,7 +12,7 @@ router.post("/registeruser", authCtrl.registerUser);
 
 
 
-router.post("/auth/forget-password", authCtrl.forgotPassword);
+router.post("/auth/forget-password", authCtrl.resetPassword);
 router.post("/auth/update-user", authCtrl.updateUser);
 router.get("*", (req, res) => {
   res.send("invalied router");

@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    //default: mongoose.Types.ObjectId, // This sets it to a new ObjectId by default
+  },
+
   firstName: {
     type: String,
   },
@@ -14,6 +19,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
   },
   password: {
+    type: String,
+  },
+  token: {
     type: String,
   },
 });

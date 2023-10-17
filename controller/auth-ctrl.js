@@ -1,4 +1,5 @@
 const User = require("../modal/user-modal");
+const jwt = require("jsonwebtoken");
 const authCtrl = {
   registerUser: async (req, res) => {
     if (
@@ -33,13 +34,50 @@ const authCtrl = {
         });
       } else {
         try {
+          // Function to check if a token is expired
+          function isTokenExpired(token) {
+            try {
+              const decoded = jwt.verify(token, "UNSAFE_STRING");
+              const currentTimestamp = Math.floor(Date.now() / 1000);
+
+              // Check if the token's expiration time (in seconds since epoch) is in the past
+              if (decoded.exp < currentTimestamp) {
+                return true; // Token has expired
+              }
+
+              return false; // Token is still valid
+            } catch (error) {
+              return true; // Token is invalid or has expired
+            }
+          }
+          const token = jwt.sign(
+            { user_id: user._id, email },
+            "UNSAFE_STRING",
+            {
+              expiresIn: "24h",
+            }
+          );
+
+          user.token = token;
           const savedUser = await user.save();
+
+          if (isTokenExpired(token)) {
+            return res.status(401).json({
+              statusCode: 401,
+              responseData: {
+                status: false,
+                message: "Token has expired",
+              },
+            });
+          }
+          // Set the token in the response header
+          res.set("Authorization", `Bearer ${token}`);
           res.status(200).json({
             statusCode: 1,
             responseData: {
               status: true,
-              message: "User is created",
-              user: savedUser,
+              message: "User is register",
+              user: user.token,
             },
           });
         } catch (err) {
@@ -82,12 +120,48 @@ const authCtrl = {
       if (user) {
         // User with the provided email exists
         if (user.password === password) {
+          // Function to check if a token is expired
+          function isTokenExpired(token) {
+            try {
+              const decoded = jwt.verify(token, "UNSAFE_STRING");
+              const currentTimestamp = Math.floor(Date.now() / 1000);
+
+              // Check if the token's expiration time (in seconds since epoch) is in the past
+              if (decoded.exp < currentTimestamp) {
+                return true; // Token has expired
+              }
+
+              return false; // Token is still valid
+            } catch (error) {
+              return true; // Token is invalid or has expired
+            }
+          }
+          const token = jwt.sign(
+            { user_id: user._id, email },
+            "UNSAFE_STRING",
+            {
+              expiresIn: "24h",
+            }
+          );
+          user.token = token;
+
+          if (isTokenExpired(token)) {
+            return res.status(401).json({
+              statusCode: 401,
+              responseData: {
+                status: false,
+                message: "Token has expired",
+              },
+            });
+          }
+          res.set("Authorization", `Bearer ${token}`);
           // Password is correct
           return res.status(200).json({
             statusCode: 200,
             responseData: {
               status: true,
               message: "User is logged in",
+              user: user,
             },
           });
         } else {
@@ -123,7 +197,7 @@ const authCtrl = {
     }
   },
 
-  forgotPassword: async (req, res) => {
+  resetPassword: async (req, res) => {
     const email = req.body.email;
     const mobileNo = req.body.mobileNo;
 
@@ -141,11 +215,26 @@ const authCtrl = {
     const user = await User.findOne({ email, mobileNo });
 
     if (user) {
-      // User with the provided email or mobileNo exists
+      const generatePassword = () => {
+        const charset = "0123456789";
+        let Password = "";
+
+        for (let i = 0; i < 9; i++) {
+          const randomIndex = Math.floor(Math.random() * charset.length);
+          Password += charset.charAt(randomIndex);
+        }
+        return Password;
+      };
+
+      const newPassword = generatePassword(); // Generate a new password
+      // Update the user's password here if needed
+
       return res.status(200).json({
-        statusCode: 1,
+        statusCode: 200,
         responseData: {
-          isUserValid: true,
+          status: true,
+          message: "User reset Password",
+          Password: newPassword,
         },
       });
     } else {
